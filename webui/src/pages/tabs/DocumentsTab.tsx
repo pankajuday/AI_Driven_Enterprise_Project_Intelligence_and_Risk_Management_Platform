@@ -1,0 +1,228 @@
+import { useState, useEffect, useRef } from 'react';
+import { UploadCloud, File, Trash2, RefreshCw, FolderClosed, X, Eye } from 'lucide-react';
+import { documentsApi } from '@/api';
+import type { DocumentRecord } from '@/types';
+import Viewer from "../../components/DocumentViewer/Viewer";
+export default function DocumentsTab({ projectId }: { projectId: string }) {
+  const [docs, setDocs] = useState<DocumentRecord[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [uploading, setUploading] = useState(false);
+  const [selectedDoc, setSelectedDoc] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const fetchDocs = () => {
+    documentsApi.list(projectId)
+      .then(res => setDocs(res.data))
+      .catch(console.error)
+      .finally(() => setLoading(false));
+  };
+
+  useEffect(() => {
+    fetchDocs();
+    // Poll for status updates if any doc is pending/processing
+    const interval = setInterval(() => {
+      setDocs(current => {
+        const needsUpdate = current.some(d => d.processing_status === 'pending' || d.processing_status === 'processing');
+        if (needsUpdate) {
+          fetchDocs();
+        }
+        return current;
+      });
+    }, 3000);
+    return () => clearInterval(interval);
+  }, [projectId]);
+
+  const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+
+    setUploading(true);
+    for (let i = 0; i < files.length; i++) {
+      try {
+        await documentsApi.upload(projectId, files[i]);
+      } catch (err) {
+        console.error('Upload failed for', files[i].name, err);
+      }
+    }
+    setUploading(false);
+    fetchDocs();
+    if (fileInputRef.current) fileInputRef.current.value = '';
+  };
+
+  const handleDelete = async (id: string) => {
+    if (!confirm('Delete this document?')) return;
+    try {
+      await documentsApi.delete(projectId, id);
+      setDocs(docs.filter(d => d.id !== id));
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  return (
+    <div className="anim-fade-in">
+      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 20 }}>
+        <h3 style={{ fontSize: 18, fontWeight: 700 }}>Project Documents</h3>
+        <button
+          className="btn btn-primary"
+          onClick={() => fileInputRef.current?.click()}
+          disabled={uploading}
+        >
+          {uploading ? <RefreshCw size={15} className="anim-spin" /> : <UploadCloud size={15} />}
+          {uploading ? 'Uploading...' : 'Upload File'}
+        </button>
+        <input
+          type="file"
+          ref={fileInputRef}
+          style={{ display: 'none' }}
+          multiple
+          onChange={handleUpload}
+          accept=".pdf,.docx,.txt,.csv,.xlsx,.pptx"
+        />
+      </div>
+
+      {loading ? (
+        <div className="skeleton" style={{ height: 100 }} />
+      ) : docs.length === 0 ? (
+        <div className="card" style={{ textAlign: 'center', padding: '60px 20px', borderStyle: 'dashed' }}>
+          <UploadCloud size={32} color="var(--text-muted)" style={{ margin: '0 auto 16px' }} />
+          <p style={{ color: 'var(--text-secondary)' }}>No documents uploaded yet.</p>
+        </div>
+      ) : (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+          {docs.map(doc => {
+            const docId = doc.id || (doc as any)._id;
+            return (
+              <div key={docId} className="card" style={{ display: 'flex', alignItems: 'center', padding: '12px 20px' }}>
+                <File size={20} color="var(--accent)" style={{ marginRight: 16 }} />
+                <div style={{ flex: 1 }}>
+                  <div style={{ fontWeight: 600, fontSize: 15 }}>{doc.filename}</div>
+                  <div style={{ fontSize: 12, color: 'var(--text-muted)', display: 'flex', gap: 12, marginTop: 4 }}>
+                    <span>{formatBytes(doc.file_size)}</span>
+                    <span>·</span>
+                    <DocStatusBadge status={doc.processing_status} />
+                    {doc.processing_status === 'completed' && (
+                      <>
+                        <span>·</span>
+                        <span>{doc.chunk_count} chunks</span>
+                      </>
+                    )}
+                  </div>
+                </div>
+                <div style={{ display: 'flex', gap: 8 }}>
+                  <button
+                    className="btn btn-ghost"
+                    style={{ padding: '6px 10px' }}
+                    onClick={() => setSelectedDoc(doc.filename)}
+                    title="Preview Document"
+                  >
+                    <Eye />
+                  </button>
+                  <button
+                    className="btn btn-ghost "
+                    style={{ padding: '6px 10px' }}
+                    onClick={() => handleDelete(docId)}
+                    title="Delete Document"
+                  >
+                    <Trash2 size={16} color="#ef4444" />
+                  </button>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
+
+      {selectedDoc && (
+        <div
+          className="anim-fade-in"
+          style={{
+            position: "fixed",
+            inset: 0,
+            zIndex: 9999,
+            background: 'rgba(2, 4, 14, 0.82)',
+            backdropFilter: 'blur(8px)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            margin: "25% auto",
+
+
+
+          }}
+          onClick={() => setSelectedDoc(null)}
+        >
+          <div
+            className="card"
+            style={{
+              width: 'min(900px, 94vw)',
+              height: 'min(75vh, 660px)',
+              display: 'flex',
+              flexDirection: 'column',
+              padding: 0,
+              overflow: 'hidden',
+              boxShadow: '0 20px 60px rgba(0,0,0,0.8)',
+              border: '1px solid var(--border-glow)',
+              position: "relative",
+              margin: "0 auto",
+              marginTop: "20px"
+
+            }}
+            onClick={e => e.stopPropagation()}
+          >
+            {/* Modal Header */}
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                padding: '12px 18px',
+                borderBottom: '1px solid var(--border)',
+                background: 'var(--bg-elevated)',
+                flexShrink: 0,
+              }}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10, minWidth: 0 }}>
+                <File size={18} color="var(--accent-glow)" />
+                <span style={{ fontWeight: 700, fontSize: 14, color: 'var(--text-primary)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                  {selectedDoc}
+                </span>
+              </div>
+              <button
+                className="btn btn-ghost"
+                style={{ padding: '5px 12px', fontSize: 12 }}
+                onClick={() => setSelectedDoc(null)}
+              >
+                <X />
+              </button>
+            </div>
+
+            {/* Viewer Content */}
+            <div style={{ flex: 1, minHeight: 0, position: 'relative' }}>
+              <Viewer projectId={projectId} filename={selectedDoc} />
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function DocStatusBadge({ status }: { status: string }) {
+  const map: Record<string, { label: string; color: string }> = {
+    pending: { label: 'Pending', color: 'muted' },
+    processing: { label: 'Ingesting...', color: 'indigo' },
+    completed: { label: 'Indexed', color: 'green' },
+    failed: { label: 'Failed', color: 'red' },
+  };
+  const config = map[status] || { label: status, color: 'muted' };
+  return <span className={`badge badge-${config.color}`}>{config.label}</span>;
+}
+
+function formatBytes(bytes: number) {
+  if (bytes === 0) return '0 B';
+  const k = 1024;
+  const sizes = ['B', 'KB', 'MB', 'GB'];
+  const i = Math.floor(Math.log(bytes) / Math.log(k));
+  return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+}

@@ -1,0 +1,60 @@
+# Python virtual environments
+.venv/
+venv/
+ENV/
+env/
+backend/.venv/
+
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+backend/app/__pycache__/
+backend/app/agents/__pycache__/
+backend/app/controllers/__pycache__/
+backend/app/models/__pycache__/
+backend/app/routes/__pycache__/
+backend/app/config/__pycache__/
+backend/app/utils/__pycache__/
+backend/app/rag/__pycache__/
+backend/app/schemas/__pycache__/
+
+# Databases and Local uploads
+backend/app/uploads/*
+!backend/app/uploads/.gitkeep
+uploads/
+DOCUMENT/
+DOCx/
+*.db
+*.sqlite
+
+# Secrets
+.env
+.env.local
+.env.*.local
+backend/.env
+webui/.env
+
+# Node.js
+node_modules/
+webui/node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
+# Production build artifacts
+webui/dist/
+webui/dist-ssr/
+*.local
+
+# IDEs and Editors
+.idea/
+.vscode/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+.DS_Store
+Thumbs.db
