@@ -90,7 +90,7 @@ async def run_scope_agent(project_id: str) -> ScopeOutput:
     return scope
 
 
-# ── LangGraph Node ────────────────────────────────────────────────────────────
+#  LangGraph Node 
 
 async def scope_node(state: dict) -> dict:
     """

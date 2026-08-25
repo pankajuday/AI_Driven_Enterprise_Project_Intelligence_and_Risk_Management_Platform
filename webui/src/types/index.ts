@@ -1,4 +1,4 @@
-// ── API Types (matching backend models) ──────────────────────────────────────
+//  API Types (matching backend models) 
 
 export type ProjectStatus =
   | 'created'
@@ -103,7 +103,7 @@ export interface ChatMessage {
   sources: string[];
 }
 
-// ── UI-only types ─────────────────────────────────────────────────────────────
+//  UI-only types 
 
 export type ViewName =
   | 'Upload'

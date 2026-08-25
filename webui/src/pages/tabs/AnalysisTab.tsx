@@ -86,7 +86,8 @@ export default function AnalysisTab({ projectId }: { projectId: string }) {
     try {
       setActionLoading(true);
       await analysisApi.generateMissing(projectId);
-      fetchStatusAndAudit();
+      setStatus('running');
+      setPipelineStep('doc_audit');
     } catch (err) {
       console.error(err);
       alert('Failed to generate missing documents');

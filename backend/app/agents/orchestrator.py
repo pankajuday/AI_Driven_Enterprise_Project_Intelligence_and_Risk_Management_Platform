@@ -1,37 +1,36 @@
 """
 Analysis Orchestrator (LangGraph)
 ==================================
-Builds and runs a StateGraph-based pipeline for project analysis.
+Builds and runs the project analysis pipeline.
 
-Graph topology
---------------
+Pipeline flow
+-------------
 
-  START
-    │
-  scope_node          ← ScopeAgent: extract project scope
-    │
-  risk_node           ← RiskAgent: identify risks
-    │
-  health_node         ← HealthAgent: compute health score (deterministic)
-    │
-  doc_audit_node      ← NEW: query DB, find missing document types
-    │
-  [conditional_doc_router]
-    ├── "generate_docs"  → doc_gen_node   (only missing docs)
-    └── "skip_gen"       → skip_gen_node  (all docs present)
-              │
-          save_node       ← persist final state to MongoDB
-              │
-            END
+    START
+        |
+    scope_node          -> extract scope from uploaded project documents
+        |
+    risk_node           -> identify risks from the same project context
+        |
+    health_node         -> compute the project health score
+        |
+    doc_audit_node      -> check which generated document types are missing
+        |
+    conditional_doc_router
+        |-- generate_docs  -> doc_gen_node (generate only missing documents)
+        '-- skip_gen       -> skip_gen_node (no new document generation)
+                            |
+                    save_node    -> persist the final state to MongoDB and sync Qdrant
+                            |
+                        END
 
-Key features
+Key behavior
 ------------
-- Typed `PipelineState` (TypedDict) is shared across all nodes.
-- LangGraph merges partial dict returns from each node via Annotated reducers.
-- `conditional_doc_router` enables smart, selective document generation.
-- `run_analysis` is the public entry point (called as a FastAPI BackgroundTask).
-- `run_missing_docs_only` runs only doc_audit → router → gen/skip → save,
-  without re-running scope/risk/health.
+- `PipelineState` is shared across all nodes.
+- LangGraph merges partial updates from each node.
+- `conditional_doc_router` selects document generation only when needed.
+- `run_analysis` runs the full pipeline as a background task.
+- `run_missing_docs_only` reuses existing scope, risks, and health data and only runs the document sub-pipeline.
 """
 
 from __future__ import annotations
@@ -51,13 +50,15 @@ from agents.document_generator_agent import (
     doc_gen_node,
     skip_gen_node,
 )
+from config.qdrant import sync_analysis_artifacts_to_qdrant
 from models.report_model import AnalysisReport, AnalysisStatus
 from models.project_model import Project, ProjectStatus
 
 
-# ─────────────────────────────────────────────────────────────────────────────
+
+
 # Conditional router
-# ─────────────────────────────────────────────────────────────────────────────
+
 
 def conditional_doc_router(
     state: PipelineState,
@@ -70,13 +71,13 @@ def conditional_doc_router(
     """
     missing = state.get("missing_doc_types") or []
     route = "generate_docs" if missing else "skip_gen"
-    print(f"[GRAPH] 🔀 conditional_doc_router → '{route}' (missing={missing})")
+    print(f"[GRAPH] conditional_doc_router -> '{route}' (missing={missing})")
     return route
 
 
-# ─────────────────────────────────────────────────────────────────────────────
+                                                                        
 # Save node
-# ─────────────────────────────────────────────────────────────────────────────
+
 
 async def save_node(state: dict) -> dict:
     """
@@ -85,7 +86,7 @@ async def save_node(state: dict) -> dict:
     Updates both AnalysisReport and Project documents.
     """
     project_id = state["project_id"]
-    print(f"[GRAPH] ▶ save_node — persisting results for project: {project_id}")
+    print(f"[GRAPH] save_node - persisting results for project: {project_id}")
 
     report = await AnalysisReport.find_one(AnalysisReport.project_id == project_id)
     if not report:
@@ -113,6 +114,11 @@ async def save_node(state: dict) -> dict:
 
     await report.save()
 
+    try:
+        await sync_analysis_artifacts_to_qdrant(report)
+    except Exception as exc:
+        print(f"[GRAPH] ⚠ save_node: could not sync analysis artifacts to Qdrant — {exc}")
+
     # Update project document
     project = await Project.get(project_id)
     if project and report.health_score is not None:
@@ -139,9 +145,7 @@ async def save_node(state: dict) -> dict:
     return {"step_log": [log_msg]}
 
 
-# ─────────────────────────────────────────────────────────────────────────────
 # Graph builders
-# ─────────────────────────────────────────────────────────────────────────────
 
 def _build_full_graph() -> StateGraph:
     """
@@ -217,18 +221,18 @@ _full_pipeline = _build_full_graph()
 _docs_pipeline = _build_docs_only_graph()
 
 
-# ─────────────────────────────────────────────────────────────────────────────
+#                                                                              
 # Public entry points (called from FastAPI background tasks)
-# ─────────────────────────────────────────────────────────────────────────────
+#                                                                              
 
 async def run_analysis(project_id: str) -> None:
     """
     Full pipeline: scope → risk → health → doc_audit → gen/skip → save.
     Called as a FastAPI BackgroundTask from POST /analysis/{project_id}/run.
     """
-    print(f"\n[ORCHESTRATOR] 🚀 Starting FULL analysis for project: {project_id}")
+    print(f"\n[ORCHESTRATOR] Starting full analysis for project: {project_id}")
 
-    # ── Mark report as RUNNING ────────────────────────────────────────────────
+    # Mark report as RUNNING
     existing = await AnalysisReport.find_one(AnalysisReport.project_id == project_id)
     if existing:
         existing.status = AnalysisStatus.RUNNING
@@ -257,7 +261,7 @@ async def run_analysis(project_id: str) -> None:
         project.updated_at = datetime.now(timezone.utc)
         await project.save()
 
-    # ── Build initial state ───────────────────────────────────────────────────
+    # Build initial state
     initial_state: PipelineState = {
         "project_id": project_id,
         "scope": None,
@@ -272,11 +276,11 @@ async def run_analysis(project_id: str) -> None:
         "raw_outputs": {},
     }
 
-    # ── Execute the graph ─────────────────────────────────────────────────────
+    # Execute the graph
     try:
         final_state: PipelineState = await _full_pipeline.ainvoke(initial_state)
         print(
-            f"[ORCHESTRATOR] ✅ Full analysis complete — "
+            f"[ORCHESTRATOR] Full analysis complete - "
             f"health={final_state.get('health_score')}/100, "
             f"risks={len(final_state.get('risks', []))}, "
             f"docs={len(final_state.get('generated_documents', []))}"
@@ -286,7 +290,7 @@ async def run_analysis(project_id: str) -> None:
 
     except Exception as exc:
         error_msg = f"{type(exc).__name__}: {exc}\n{traceback.format_exc()}"
-        print(f"[ORCHESTRATOR] ❌ Pipeline FAILED: {error_msg}")
+        print(f"[ORCHESTRATOR] Pipeline FAILED: {error_msg}")
 
         # Persist failure
         report = await AnalysisReport.find_one(AnalysisReport.project_id == project_id)
@@ -310,9 +314,9 @@ async def run_missing_docs_only(project_id: str) -> dict:
 
     Returns a summary dict with existing/missing/generated doc type lists.
     """
-    print(f"\n[ORCHESTRATOR] 📄 Starting MISSING-DOCS-ONLY pipeline for project: {project_id}")
+    print(f"\n[ORCHESTRATOR] Starting missing-docs-only pipeline for project: {project_id}")
 
-    # ── Load existing report ──────────────────────────────────────────────────
+    # Load existing report
     report = await AnalysisReport.find_one(AnalysisReport.project_id == project_id)
     if not report:
         raise ValueError(f"No analysis report found for project {project_id}. Run full analysis first.")
@@ -322,7 +326,7 @@ async def run_missing_docs_only(project_id: str) -> dict:
     report.pipeline_step = "doc_audit"
     await report.save()
 
-    # ── Build initial state from existing report ──────────────────────────────
+    # Build initial state from existing report
     initial_state: PipelineState = {
         "project_id": project_id,
         "scope": report.scope,
@@ -337,11 +341,11 @@ async def run_missing_docs_only(project_id: str) -> dict:
         "raw_outputs": report.raw_outputs or {},
     }
 
-    # ── Execute the lightweight graph ─────────────────────────────────────────
+    # Execute the lightweight graph
     try:
         final_state: PipelineState = await _docs_pipeline.ainvoke(initial_state)
         print(
-            f"[ORCHESTRATOR] ✅ Missing-docs pipeline complete — "
+            f"[ORCHESTRATOR] Missing-docs pipeline complete - "
             f"generated={[d.doc_type for d in final_state.get('generated_documents', [])]}"
         )
         for line in final_state.get("step_log", []):
@@ -358,7 +362,7 @@ async def run_missing_docs_only(project_id: str) -> dict:
 
     except Exception as exc:
         error_msg = f"{type(exc).__name__}: {exc}\n{traceback.format_exc()}"
-        print(f"[ORCHESTRATOR] ❌ Missing-docs pipeline FAILED: {error_msg}")
+        print(f"[ORCHESTRATOR] Missing-docs pipeline FAILED: {error_msg}")
 
         report = await AnalysisReport.find_one(AnalysisReport.project_id == project_id)
         if report:

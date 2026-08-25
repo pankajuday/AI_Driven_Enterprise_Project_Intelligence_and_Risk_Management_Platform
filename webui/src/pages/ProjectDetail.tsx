@@ -42,7 +42,7 @@ export default function ProjectDetail() {
 
   return (
     <div className="anim-fade-up" style={{ display: 'flex', gap: 24, flexWrap: 'wrap', alignItems: 'flex-start' }}>
-      {/* ── Project Details Sidebar ────────────────────────────────────────── */}
+      {/*  Project Details Sidebar  */}
       <aside 
         style={{ 
           width: 260, 
@@ -151,7 +151,7 @@ export default function ProjectDetail() {
         </div>
       </aside>
 
-      {/* ── Active Tab Content Area ────────────────────────────────────────── */}
+      {/*  Active Tab Content Area  */}
       <main style={{ flex: 1, minWidth: 320 }}>
         {activeTab === 'docs' && <DocumentsTab projectId={projectId!} />}
         {activeTab === 'analysis' && <AnalysisTab projectId={projectId!} />}

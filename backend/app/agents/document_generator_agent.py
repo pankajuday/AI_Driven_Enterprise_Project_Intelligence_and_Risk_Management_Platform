@@ -32,7 +32,7 @@ from models.report_model import (
 
 GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY")
 
-# ── All four canonical document types the pipeline can produce ────────────────
+#    All four canonical document types the pipeline can produce                 
 ALL_DOC_TYPES: list[str] = [
     "executive_summary",
     "user_stories",
@@ -47,7 +47,7 @@ llm = ChatGoogleGenerativeAI(
 )
 
 
-# ── Shared RAG helper ─────────────────────────────────────────────────────────
+#    Shared RAG helper                                                          
 
 async def _retrieve_context(project_id: str, query: str, k: int = 8) -> str:
     vector_store = get_vector_store(project_id)
@@ -55,7 +55,7 @@ async def _retrieve_context(project_id: str, query: str, k: int = 8) -> str:
     return "\n\n---\n\n".join(d.page_content for d in docs)
 
 
-# ── Individual document generators (unchanged business logic) ─────────────────
+#    Individual document generators (unchanged business logic)                  
 
 async def generate_executive_summary(
     project_id: str, scope: ScopeOutput
@@ -130,7 +130,7 @@ async def generate_risk_register_doc(risks: list[RiskItem]) -> GeneratedDocument
     for i, r in enumerate(risks, 1):
         rows.append(
             f"| {i} | {r.title} | {r.category.value.title()} | "
-            f"{'🔴' if r.severity.value == 'critical' else '🟠' if r.severity.value == 'high' else '🟡' if r.severity.value == 'medium' else '🟢'} {r.severity.value.title()} | "
+            f"{'CRITICAL' if r.severity.value == 'critical' else 'HIGH' if r.severity.value == 'high' else 'MEDIUM' if r.severity.value == 'medium' else 'LOW'} {r.severity.value.title()} | "
             f"{r.probability} | {r.impact} | {r.mitigation} |"
         )
 
@@ -202,7 +202,7 @@ Repeat for each sprint. Add a ## Summary section at the end.
     )
 
 
-# ── Legacy runner (kept for backward compatibility) ───────────────────────────
+#    Legacy runner (kept for backward compatibility)                            
 
 async def run_document_generator(
     project_id: str,
@@ -227,7 +227,7 @@ async def run_document_generator(
     return docs
 
 
-# ── LangGraph Nodes ───────────────────────────────────────────────────────────
+#    LangGraph Nodes                                                            
 
 async def doc_audit_node(state: dict) -> dict:
     """
@@ -285,7 +285,7 @@ async def doc_gen_node(state: dict) -> dict:
 
     new_docs: list[GeneratedDocument] = []
 
-    # ── Dispatch only the missing generators ──────────────────────────────────
+    #    Dispatch only the missing generators                                   
     if "executive_summary" in missing:
         doc = await generate_executive_summary(project_id, scope)
         new_docs.append(doc)
@@ -320,6 +320,6 @@ async def skip_gen_node(state: dict) -> dict:
     Logs a message and passes state through unchanged.
     """
     existing = state.get("existing_doc_types") or []
-    msg = f"⏭ skip_gen_node: all {len(existing)} documents already exist — skipping generation."
+    msg = f"skip_gen_node: all {len(existing)} documents already exist — skipping generation."
     print(f"[GRAPH] {msg}")
     return {"step_log": [msg]}

@@ -75,7 +75,7 @@ export default function ChatTab({ projectId }: { projectId: string }) {
         margin: '-8px 0',
       }}
     >
-      {/* ── Messages Scroll Area ──────────────────────────────────────────── */}
+      {/*  Messages Scroll Area  */}
       <div 
         ref={scrollRef} 
         style={{ 
@@ -206,7 +206,7 @@ export default function ChatTab({ projectId }: { projectId: string }) {
         )}
       </div>
 
-      {/* ── Fixed Prompt Input Area at Bottom ─────────────────────────────── */}
+      {/*  Fixed Prompt Input Area at Bottom  */}
       <form 
         onSubmit={handleSend} 
         style={{ 

@@ -13,7 +13,7 @@ class SendMessageRequest(BaseModel):
     message: str
 
 
-# ── Send message ───────────────────────────────────────────────────────────────
+#  Send message 
 
 @router.post("/{project_id}/message")
 async def send_message(project_id: str, body: SendMessageRequest):
@@ -53,7 +53,7 @@ async def send_message(project_id: str, body: SendMessageRequest):
     }
 
 
-# ── Get history ────────────────────────────────────────────────────────────────
+#  Get history 
 
 @router.get("/{project_id}/history")
 async def get_history(project_id: str):
@@ -67,7 +67,7 @@ async def get_history(project_id: str):
     }
 
 
-# ── Clear history ──────────────────────────────────────────────────────────────
+#  Clear history 
 
 @router.delete("/{project_id}/history")
 async def clear_history(project_id: str):

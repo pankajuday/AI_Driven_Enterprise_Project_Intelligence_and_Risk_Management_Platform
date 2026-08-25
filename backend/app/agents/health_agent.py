@@ -28,7 +28,7 @@ def compute_health_score(
       - Schedule risk    (25 pts): penalised by schedule-category risks
     """
 
-    # ── 1. Scope Clarity ─────────────────────────────────────────────────────
+    #  1. Scope Clarity 
     scope_fields = 0
     if scope:
         if scope.project_name: scope_fields += 1
@@ -39,7 +39,7 @@ def compute_health_score(
         if scope.summary:      scope_fields += 1
     scope_clarity = min(scope_fields / 8.0, 1.0) * 100
 
-    # ── 2. Documentation Completeness ────────────────────────────────────────
+    #  2. Documentation Completeness 
     doc_score = 0
     if scope:
         if scope.out_of_scope:  doc_score += 25
@@ -48,7 +48,7 @@ def compute_health_score(
         if scope.stakeholders: doc_score += 25
     doc_completeness = float(doc_score)
 
-    # ── 3. Risk Density ───────────────────────────────────────────────────────
+    #  3. Risk Density 
     total = len(risks)
     if total == 0:
         risk_density = 100.0  # no risks found → assume clean docs
@@ -59,7 +59,7 @@ def compute_health_score(
         penalty = (high_critical / total) * 100
         risk_density = max(0.0, 100.0 - penalty)
 
-    # ── 4. Schedule Risk ─────────────────────────────────────────────────────
+    #  4. Schedule Risk 
     schedule_risks = [r for r in risks if r.category == "schedule"]
     if not risks:
         schedule_risk_score = 100.0
@@ -70,7 +70,7 @@ def compute_health_score(
         )
         schedule_risk_score = max(0.0, 100.0 - (schedule_high / max(len(risks), 1)) * 100)
 
-    # ── Weighted average ──────────────────────────────────────────────────────
+    #  Weighted average 
     health_score = (
         scope_clarity * 0.30 +
         doc_completeness * 0.20 +
@@ -88,7 +88,7 @@ def compute_health_score(
     return round(health_score, 1), breakdown
 
 
-# ── LangGraph Node ────────────────────────────────────────────────────────────
+#  LangGraph Node 
 
 async def health_node(state: dict) -> dict:
     """

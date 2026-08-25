@@ -100,7 +100,7 @@ async def run_risk_agent(project_id: str) -> list[RiskItem]:
     return risks
 
 
-# ── LangGraph Node ────────────────────────────────────────────────────────────
+#  LangGraph Node 
 
 async def risk_node(state: dict) -> dict:
     """
@@ -116,13 +116,13 @@ async def risk_node(state: dict) -> dict:
         return {
             "risks": risks,
             "raw_outputs": {**state.get("raw_outputs", {}), "risk_count": len(risks)},
-            "step_log": [f"✅ risk_node: identified {len(risks)} risk(s)"],
+            "step_log": [f" risk_node: identified {len(risks)} risk(s)"],
         }
     except Exception as exc:
-        print(f"[GRAPH] ❌ risk_node failed: {exc}")
+        print(f"[GRAPH]  risk_node failed: {exc}")
         return {
             "risks": [],
             "error": f"risk_node: {exc}",
-            "step_log": [f"❌ risk_node: FAILED — {exc}"],
+            "step_log": [f"risk_node: FAILED — {exc}"],
         }
 

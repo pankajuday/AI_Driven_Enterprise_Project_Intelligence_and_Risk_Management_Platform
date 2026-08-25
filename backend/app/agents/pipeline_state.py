@@ -21,7 +21,7 @@ from models.report_model import (
 )
 
 
-# ── Reducer helpers ───────────────────────────────────────────────────────────
+#  Reducer helpers 
 
 def _append_log(existing: List[str], new: List[str]) -> List[str]:
     """Reducer: append new log lines to the existing list."""
@@ -39,7 +39,7 @@ def _merge_docs(existing: List[GeneratedDocument], new: List[GeneratedDocument])
     return list(by_type.values())
 
 
-# ── The shared pipeline state ─────────────────────────────────────────────────
+#  The shared pipeline state 
 
 class PipelineState(TypedDict):
     """
@@ -49,23 +49,23 @@ class PipelineState(TypedDict):
     updates via the Annotated reducers.
     """
 
-    # ── Input ─────────────────────────────────────────────────────────────────
+    #  Input 
     project_id: str
 
-    # ── Agent outputs ─────────────────────────────────────────────────────────
+    #  Agent outputs 
     scope: Optional[ScopeOutput]
     risks: List[RiskItem]
     health_score: Optional[float]
     health_breakdown: Optional[HealthBreakdown]
 
-    # ── Document tracking ─────────────────────────────────────────────────────
+    #  Document tracking 
     existing_doc_types: List[str]   # doc_types already present in DB
     missing_doc_types: List[str]    # doc_types that still need to be generated
 
     # Reducer: new docs are merged/upserted into the accumulated list
     generated_documents: Annotated[List[GeneratedDocument], _merge_docs]
 
-    # ── Diagnostics ───────────────────────────────────────────────────────────
+    #  Diagnostics 
     error: Optional[str]
 
     # Reducer: log lines are appended across nodes
