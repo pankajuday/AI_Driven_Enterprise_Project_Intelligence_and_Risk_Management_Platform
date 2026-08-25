@@ -36,26 +36,26 @@ async def run_ingestion_pipeline(document_id: str) -> None:
 
     print(f"[PIPELINE] Starting ingestion for: {doc_record.filename}")
 
-    # ── 1. Mark as PROCESSING ────────────────────────────────────────────────
+    #  1. Mark as PROCESSING 
     doc_record.processing_status = DocumentStatus.PROCESSING
     doc_record.updated_at = datetime.now(timezone.utc)
     await doc_record.save()
 
     try:
-        # ── 2. Load document via Docling ──────────────────────────────────────
+        #  2. Load document via Docling 
         print(f"[PIPELINE] Loading document from: {doc_record.storage_path}")
         raw_docs = DocumentLoader.load_document(doc_record.storage_path)
 
         if not raw_docs:
             raise ValueError("DocumentLoader returned no content.")
 
-        # ── 3. Chunk documents ────────────────────────────────────────────────
+        #  3. Chunk documents 
         chunks = TextProcessor.chunk_documents(raw_docs)
 
         if not chunks:
             raise ValueError("TextProcessor produced zero chunks.")
 
-        # ── 4. Attach metadata to every chunk ─────────────────────────────────
+        #  4. Attach metadata to every chunk 
         for chunk in chunks:
             chunk.metadata.update({
                 "project_id": doc_record.project_id,
@@ -64,12 +64,12 @@ async def run_ingestion_pipeline(document_id: str) -> None:
                 "file_type": doc_record.file_type,
             })
 
-        # ── 5. Embed and store in Qdrant ──────────────────────────────────────
+        #  5. Embed and store in Qdrant 
         print(f"[PIPELINE] Embedding {len(chunks)} chunks into Qdrant ...")
         vector_store = get_vector_store(doc_record.project_id)
         await vector_store.aadd_documents(chunks)
 
-        # ── 6. Mark as COMPLETED ──────────────────────────────────────────────
+        #  6. Mark as COMPLETED 
         doc_record.processing_status = DocumentStatus.COMPLETED
         doc_record.chunk_count = len(chunks)
         doc_record.updated_at = datetime.now(timezone.utc)

@@ -18,7 +18,7 @@ export default function Sidebar() {
         overflowY: 'auto',
       }}
     >
-      {/* ── Logo ─────────────────────────────────────────── */}
+      {/*  Logo  */}
       <div
         style={{
           display: 'flex',
@@ -55,7 +55,7 @@ export default function Sidebar() {
         </div>
       </div>
 
-      {/* ── Navigation ───────────────────────────────────── */}
+      {/*  Navigation  */}
       <div style={{ fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--text-muted)', fontWeight: 700, padding: '12px 10px 6px' }}>
         Navigation
       </div>
@@ -70,7 +70,7 @@ export default function Sidebar() {
         <ChevronRight size={13} style={{ marginLeft: 'auto', opacity: 0.4 }} />
       </NavLink>
 
-      {/* ── New Project CTA ──────────────────────────────── */}
+      {/*  New Project CTA  */}
       <div style={{ marginTop: 'auto', paddingTop: 16 }}>
         <button
           className="btn btn-primary"

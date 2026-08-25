@@ -23,8 +23,8 @@ backend/app/schemas/__pycache__/
 backend/app/uploads/*
 !backend/app/uploads/.gitkeep
 uploads/
-DOCUMENT/
 DOCx/
+DOCUMENTS/
 *.db
 *.sqlite
 

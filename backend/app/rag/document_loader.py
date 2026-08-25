@@ -47,35 +47,7 @@ class DocumentLoader:
 
         try:
             loader = DoclingLoader(file_path=path,export_type=ExportType.MARKDOWN)
-            # Use the match statement for type-safe and clean routing
-            # match extension:
-            #     case ".pdf":
-            #         loader = DoclingLoader(file_path=path)
-            #     case ".html":
-            #         loader = DoclingLoader(file_path=path)
-                    
-                
-            #     case ".docx":
-            #         loader = DoclingLoader(file_path=path, export_type=ExportType.MARKDOWN)
-                    
-
-            #     case ".txt":
-            #         loader = TextLoader(str(path))
-                    
-            #     case ".xlsx" | ".xls":
-            #         # Note: Unstructured loaders often require specific system dependencies
-            #         loader = DoclingLoader(file_path=path)
-                    
-                
-            #     case ".pptx":
-            #         loader = UnstructuredPowerPointLoader(str(path))
-                    
-
-            #     case _:
-            #         print(f"[LOADER] Warning: Unsupported document type '{extension}'. Loading failed.")
-            #         return None
-
-            # Execute the chosen loader
+            
             documents = loader.load()
             
             print(f"[LOADER] Successfully loaded {len(documents)} document(s).")

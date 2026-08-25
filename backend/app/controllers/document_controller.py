@@ -17,7 +17,7 @@ from models.project_model import Project
 from rag.pipeline import run_ingestion_pipeline
 
 
-# ── Constants ─────────────────────────────────────────────────────────────────
+#  Constants 
 
 ALLOWED_MIME_TYPES: dict[str, FileType] = {
     "application/pdf": FileType.PDF,
@@ -44,7 +44,7 @@ def _project_upload_dir(project_id: str) -> str:
     return path
 
 
-# ── Upload ─────────────────────────────────────────────────────────────────────
+#  Upload 
 
 async def upload_docs(
     project_id: str,
@@ -102,14 +102,14 @@ async def upload_docs(
     }
 
 
-# ── List ───────────────────────────────────────────────────────────────────────
+#  List 
 
 async def list_documents(project_id: str):
     docs = await DocumentRecord.find(DocumentRecord.project_id == project_id).to_list()
     return docs
 
 
-# ── Status ─────────────────────────────────────────────────────────────────────
+#  Status 
 
 async def get_document_status(document_id: str):
     doc = await DocumentRecord.get(document_id)
@@ -124,7 +124,7 @@ async def get_document_status(document_id: str):
     }
 
 
-# ── Serve ──────────────────────────────────────────────────────────────────────
+#  Serve 
 
 async def serve_document(project_id: str, filename: str, download: bool = False):
     file_path = os.path.join(BASE_UPLOAD_DIR, project_id, filename)
@@ -138,7 +138,7 @@ async def serve_document(project_id: str, filename: str, download: bool = False)
     )
 
 
-# ── Delete ─────────────────────────────────────────────────────────────────────
+#  Delete 
 
 async def delete_document(document_id: str):
     doc = await DocumentRecord.get(document_id)

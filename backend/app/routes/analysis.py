@@ -21,9 +21,9 @@ from models.report_model import AnalysisReport, AnalysisStatus
 router = APIRouter()
 
 
-# ─────────────────────────────────────────────────────────────────────────────
+# 
 # Trigger endpoints
-# ─────────────────────────────────────────────────────────────────────────────
+# 
 
 @router.post("/{project_id}/run")
 async def trigger_analysis(project_id: str, background_tasks: BackgroundTasks):
@@ -44,9 +44,11 @@ async def trigger_analysis(project_id: str, background_tasks: BackgroundTasks):
 
 
 @router.post("/{project_id}/generate-missing")
-async def generate_missing_documents(project_id: str):
+async def generate_missing_documents(project_id: str, background_tasks: BackgroundTasks):
     """
-    Synchronously run the document sub-pipeline for a project.
+    Trigger document generation for any missing documents as a background task.
+    Returns immediately (202 Accepted) — the frontend polls /status for completion.
+
     Detects which of the four canonical documents are missing and generates
     only those — scope/risk/health agents are NOT re-run.
 
@@ -61,19 +63,18 @@ async def generate_missing_documents(project_id: str):
     if existing.status == AnalysisStatus.RUNNING:
         return {"message": "Analysis is already running.", "status": "running"}
 
-    result = await run_missing_docs_only(project_id)
+    background_tasks.add_task(run_missing_docs_only, project_id)
     return {
-        "message": "Missing document generation complete.",
-        "existing_doc_types": result["existing_doc_types"],
-        "missing_doc_types_before": result["missing_doc_types"],
-        "newly_generated": result["generated_doc_types"],
-        "all_doc_types": ALL_DOC_TYPES,
+        "message": "Missing document generation started in background.",
+        "status": "running",
+        "pipeline": "missing_docs_only",
     }
 
 
-# ─────────────────────────────────────────────────────────────────────────────
+
+# 
 # Read endpoints
-# ─────────────────────────────────────────────────────────────────────────────
+# 
 
 @router.get("/{project_id}/status")
 async def get_analysis_status(project_id: str):

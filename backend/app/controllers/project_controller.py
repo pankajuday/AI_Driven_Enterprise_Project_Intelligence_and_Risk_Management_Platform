@@ -13,7 +13,7 @@ from models.project_model import Project, CreateProject, ProjectStatus
 from config.qdrant import delete_collection
 
 
-# ── Create ────────────────────────────────────────────────────────────────────
+#  Create 
 
 async def create_project(payload: CreateProject) -> Project:
     project = Project(
@@ -25,13 +25,13 @@ async def create_project(payload: CreateProject) -> Project:
     return project
 
 
-# ── List ──────────────────────────────────────────────────────────────────────
+#  List 
 
 async def list_projects() -> List[Project]:
     return await Project.find_all().to_list()
 
 
-# ── Get single ────────────────────────────────────────────────────────────────
+#  Get single 
 
 async def get_project(project_id: str) -> Project:
     project = await Project.get(project_id)
@@ -40,7 +40,7 @@ async def get_project(project_id: str) -> Project:
     return project
 
 
-# ── Update status ─────────────────────────────────────────────────────────────
+#  Update status 
 
 async def update_project_status(project_id: str, status: ProjectStatus) -> Project:
     project = await Project.get(project_id)
@@ -52,7 +52,7 @@ async def update_project_status(project_id: str, status: ProjectStatus) -> Proje
     return project
 
 
-# ── Delete ────────────────────────────────────────────────────────────────────
+#  Delete 
 
 async def delete_project(project_id: str) -> dict:
     project = await Project.get(project_id)
