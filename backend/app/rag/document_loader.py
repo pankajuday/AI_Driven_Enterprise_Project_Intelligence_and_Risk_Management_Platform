@@ -5,14 +5,6 @@ load_dotenv()
 import os
 from pathlib import Path
 from typing import Optional, List
-# Import specific loaders
-from langchain_community.document_loaders import ( 
-    UnstructuredPDFLoader,
-    Docx2txtLoader, 
-    TextLoader, 
-    UnstructuredExcelLoader, 
-    UnstructuredPowerPointLoader
-)
 from langchain_core.documents import Document # The standard output type
 from langchain_docling import DoclingLoader
 from langchain_docling.loader import ExportType

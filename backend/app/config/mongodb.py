@@ -1,7 +1,6 @@
 import os
 from beanie import init_beanie
 from dotenv import load_dotenv
-from motor.motor_asyncio import AsyncIOMotorClient
 from pymongo import AsyncMongoClient
 load_dotenv()
 
