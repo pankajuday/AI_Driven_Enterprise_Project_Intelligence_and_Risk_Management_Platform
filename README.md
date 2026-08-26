@@ -1,4 +1,4 @@
-#  AI Risk Forecasting System
+#  AI-Driven Enterprise Project Intelligence & Risk Management Platform
 
 **An Advanced Platform for Comprehensive Predictive Risk Analysis using LLMs and Structured Data.**
 
@@ -68,10 +68,12 @@ The backend handles data ingestion, AI processing, and data persistence.
     DB_NAME=ai_intelligence_risk_advisor
     HF_TOKEN=your_huggingface_token_here 
     GOOGLE_API_KEY=your_google_api_key_here
+    LLM_MODEL=gemini-3.5-flash-lite # you can change this to your preferred LLM model
     NVIDIA_API_KEY=your_nvidia_api_key_here # optional, only if using NVIDIA APIs
     DOCLING_SERVE_ALLOW_EXTERNAL_PLUGINS=true
     TORCH_COMPILE_DISABLE=1
     TORCHINDUCTOR_DISABLE=1
+    QDRANT_URL=http://localhost:6333
     ```
 
 4.  **Run the Server:**
@@ -99,7 +101,7 @@ The frontend provides the user interface for interaction.
 
     > **Example `.env` file: for webui**  
     ```bash
-    VITE_API_BASE_URL=http://127.0.0.1:3000/v1/api
+    VITE_API_URL=http://127.0.0.1:3000/v1/api
     ```
 
 4.  **Run the Development Server:**
@@ -109,26 +111,4 @@ The frontend provides the user interface for interaction.
     *The UI should open in your browser at `http://localhost:5173` (or similar port).*
 
 ##  Project Structure
-
-```mermaid
-flowchart TD
-    A[AI Risk Forecasting System] --> B[backend/]
-    A --> C[webui/]
-    A --> E[README.md]
-    A --> F[LICENSE]
-
-    B --> B1[app/]
-    B --> B2[requirements.txt]
-    B --> B3[main.py]
-    
-
-    B1 --> B11[models/Pydantic Bean ie models]
-    B1 --> B12[utils/Helper functions]
-    B1 --> B13[controllers/API logic handlers]
-    B1 --> B14[...]
-
-    C --> C1[src/Source code for the UI components]
-    C --> C2[public/docs/Sample documents and state files]
-    C --> C3[package.json/JavaScript dependencies]
-    C --> C4[...]
-```
+[View Diagram ![](https://app.eraser.io/workspace/p9tkWhTL1ysH2TttsEm3/preview?diagram=hDr5Dfrq_i9HMusRR7pd&type=embed)](https://app.eraser.io/workspace/p9tkWhTL1ysH2TttsEm3?diagram=hDr5Dfrq_i9HMusRR7pd)
