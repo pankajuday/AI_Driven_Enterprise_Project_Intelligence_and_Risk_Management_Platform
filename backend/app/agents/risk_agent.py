@@ -20,7 +20,7 @@ from models.report_model import RiskItem, RiskCategory, RiskSeverity
 GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY")
 
 llm = ChatGoogleGenerativeAI(
-    model="gemini-2.5-flash",
+    model="gemini-3.6-flash",
     google_api_key=GOOGLE_API_KEY,
     temperature=0.2,
 )

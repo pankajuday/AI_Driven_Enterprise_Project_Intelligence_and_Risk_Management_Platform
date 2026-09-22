@@ -20,7 +20,7 @@ from models.report_model import ScopeOutput
 GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY")
 
 llm = ChatGoogleGenerativeAI(
-    model="gemini-2.5-flash",
+    model="gemini-3.6-flash",
     google_api_key=GOOGLE_API_KEY,
     temperature=0.1,
 )
@@ -86,7 +86,7 @@ async def run_scope_agent(project_id: str) -> ScopeOutput:
         print(f"[SCOPE_AGENT] Parse error: {e}. Raw: {raw_text[:300]}")
         scope = ScopeOutput(summary=raw_text[:500])
 
-    print(f"[SCOPE_AGENT] ✅ Done. Deliverables found: {len(scope.deliverables)}")
+    print(f"[SCOPE_AGENT]  Done. Deliverables found: {len(scope.deliverables)}")
     return scope
 
 
@@ -106,13 +106,13 @@ async def scope_node(state: dict) -> dict:
         return {
             "scope": scope,
             "raw_outputs": {**state.get("raw_outputs", {}), "scope_raw": scope.model_dump()},
-            "step_log": [f"✅ scope_node: extracted scope — {len(scope.deliverables)} deliverable(s)"],
+            "step_log": [f" scope_node: extracted scope — {len(scope.deliverables)} deliverable(s)"],
         }
     except Exception as exc:
-        print(f"[GRAPH] ❌ scope_node failed: {exc}")
+        print(f"[GRAPH]  scope_node failed: {exc}")
         return {
             "scope": None,
             "error": f"scope_node: {exc}",
-            "step_log": [f"❌ scope_node: FAILED — {exc}"],
+            "step_log": [f" scope_node: FAILED — {exc}"],
         }
 

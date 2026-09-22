@@ -41,7 +41,7 @@ ALL_DOC_TYPES: list[str] = [
 ]
 
 llm = ChatGoogleGenerativeAI(
-    model="gemini-2.5-flash",
+    model="gemini-3.6-flash",
     google_api_key=GOOGLE_API_KEY,
     temperature=0.3,
 )
@@ -213,16 +213,16 @@ async def run_document_generator(
     docs = []
 
     docs.append(await generate_executive_summary(project_id, scope))
-    print("[DOC_GEN] ✅ Executive Summary done.")
+    print("[DOC_GEN]  Executive Summary done.")
 
     docs.append(await generate_user_stories(project_id, scope))
-    print("[DOC_GEN] ✅ User Stories done.")
+    print("[DOC_GEN]  User Stories done.")
 
     docs.append(await generate_risk_register_doc(risks))
-    print("[DOC_GEN] ✅ Risk Register done.")
+    print("[DOC_GEN]  Risk Register done.")
 
     docs.append(await generate_sprint_plan(project_id, scope))
-    print("[DOC_GEN] ✅ Sprint Plan done.")
+    print("[DOC_GEN]  Sprint Plan done.")
 
     return docs
 
@@ -253,7 +253,7 @@ async def doc_audit_node(state: dict) -> dict:
     missing = [dt for dt in ALL_DOC_TYPES if dt not in existing]
 
     log_msg = (
-        f"✅ doc_audit_node: {len(existing)} existing doc(s) {existing}, "
+        f" doc_audit_node: {len(existing)} existing doc(s) {existing}, "
         f"{len(missing)} missing → {missing}"
     )
     print(f"[GRAPH] {log_msg}")
@@ -289,27 +289,27 @@ async def doc_gen_node(state: dict) -> dict:
     if "executive_summary" in missing:
         doc = await generate_executive_summary(project_id, scope)
         new_docs.append(doc)
-        print("[GRAPH] ✅ executive_summary generated.")
+        print("[GRAPH]  executive_summary generated.")
 
     if "user_stories" in missing:
         doc = await generate_user_stories(project_id, scope)
         new_docs.append(doc)
-        print("[GRAPH] ✅ user_stories generated.")
+        print("[GRAPH]  user_stories generated.")
 
     if "risk_register" in missing:
         doc = await generate_risk_register_doc(risks)
         new_docs.append(doc)
-        print("[GRAPH] ✅ risk_register generated.")
+        print("[GRAPH]  risk_register generated.")
 
     if "sprint_plan" in missing:
         doc = await generate_sprint_plan(project_id, scope)
         new_docs.append(doc)
-        print("[GRAPH] ✅ sprint_plan generated.")
+        print("[GRAPH]  sprint_plan generated.")
 
     return {
         # Reducer: _merge_docs will upsert these into the accumulated list
         "generated_documents": new_docs,
-        "step_log": [f"✅ doc_gen_node: generated {len(new_docs)} new doc(s) → {[d.doc_type for d in new_docs]}"],
+        "step_log": [f" doc_gen_node: generated {len(new_docs)} new doc(s) → {[d.doc_type for d in new_docs]}"],
     }
 
 
