@@ -24,7 +24,6 @@ backend/app/uploads/*
 !backend/app/uploads/.gitkeep
 uploads/
 DOCx/
-DOCUMENTS/
 *.db
 *.sqlite
 
