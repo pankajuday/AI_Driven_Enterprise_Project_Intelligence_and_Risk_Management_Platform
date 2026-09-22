@@ -24,7 +24,7 @@ export default function ProjectList() {
   };
 
   return (
-    <div className="anim-fade-up" style={{ maxWidth: 960, margin: '0 auto' }}>
+    <div className="anim-fade-up" style={{ width: '100%', maxWidth: 1320, margin: '0 auto' }}>
       {/* Header */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 32 }}>
         <div>

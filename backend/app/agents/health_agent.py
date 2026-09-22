@@ -108,7 +108,7 @@ async def health_node(state: dict) -> dict:
         "health_score": health_score,
         "health_breakdown": breakdown,
         "step_log": [
-            f"✅ health_node: score={health_score}/100 "
+            f" health_node: score={health_score}/100 "
             f"(scope={breakdown.scope_clarity_percent}%, "
             f"docs={breakdown.documentation_completeness_percent}%, "
             f"risk_density={breakdown.risk_density_percent}%, "

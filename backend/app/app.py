@@ -12,7 +12,7 @@ async def lifespan(app: FastAPI):
 
 
 app = FastAPI(
-    title="AI Project Intelligence & Risk Advisor",
+    title="AI-Driven Enterprise Project Intelligence & Risk Management Platform",
     description="Intelligent platform for project risk forecasting using RAG and multi-agent AI.",
     version="1.0.0",
     lifespan=lifespan,

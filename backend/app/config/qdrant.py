@@ -175,7 +175,7 @@ async def sync_analysis_artifacts_to_qdrant(report: AnalysisReport) -> None:
 
     await vector_store.aadd_documents(documents=documents, ids=ids)
     print(
-        f"[QDRANT] ✅ Synced {len(documents)} vectors for project {report.project_id} "
+        f"[QDRANT]  Synced {len(documents)} vectors for project {report.project_id} "
         f"(1 report summary + {len(documents) - 1} generated-doc chunks)"
     )
 

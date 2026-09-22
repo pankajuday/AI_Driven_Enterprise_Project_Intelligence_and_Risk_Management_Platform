@@ -117,7 +117,7 @@ export default function AnalysisTab({ projectId }: { projectId: string }) {
   };
 
   return (
-    <div className="anim-fade-in" style={{ display: 'flex', flexDirection: 'column', gap: 24, maxWidth: 800, margin: '20px auto' }}>
+    <div className="anim-fade-in" style={{ display: 'flex', flexDirection: 'column', gap: 24, width: '100%' }}>
       
       {/* 1. Main Status Card */}
       <div className="card text-center" style={{ padding: '40px 20px' }}>

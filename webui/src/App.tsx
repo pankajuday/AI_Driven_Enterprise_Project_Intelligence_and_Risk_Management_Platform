@@ -3,7 +3,6 @@ import Layout from '@/components/layout/Layout';
 import ProjectList from '@/pages/ProjectList';
 import CreateProject from '@/pages/CreateProject';
 import ProjectDetail from '@/pages/ProjectDetail';
-import DownloadPDF from './components/DownloadPDF';
 
 const router = createBrowserRouter([
   {
@@ -15,13 +14,13 @@ const router = createBrowserRouter([
       { path: 'projects/new', element: <CreateProject /> },
       { path: 'projects/:projectId', element: <ProjectDetail /> },
       { path: '*', element: <Navigate to="/projects" replace /> },
-      {
-        path: 'test', element: <DownloadPDF markdown={`| Risk | Severity | Status |
-|---|---|---|
-| Missing API documentation | High | Open |
-| Low test coverage | Medium | Open |
-| Outdated dependency | Low | Monitoring |`} filename="hello.pdf" />
-      },
+//       {
+//         path: 'test', element: <DownloadPDF markdown={`| Risk | Severity | Status |
+// |---|---|---|
+// | Missing API documentation | High | Open |
+// | Low test coverage | Medium | Open |
+// | Outdated dependency | Low | Monitoring |`} filename="hello.pdf" />
+//       },
     ],
   },
 ]);

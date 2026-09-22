@@ -75,7 +75,7 @@ async def run_ingestion_pipeline(document_id: str) -> None:
         doc_record.updated_at = datetime.now(timezone.utc)
         await doc_record.save()
 
-        print(f"[PIPELINE] ✅ Ingestion complete for '{doc_record.filename}' "
+        print(f"[PIPELINE]  Ingestion complete for '{doc_record.filename}' "
               f"({len(chunks)} chunks stored).")
 
     except Exception as exc:
